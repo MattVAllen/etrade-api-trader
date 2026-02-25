@@ -28,7 +28,7 @@ A lightweight command-line tool for executing stock trades through the E\*TRADE 
 ## Installation
 
 ```cmd
-git clone https://github.com/yourusername/etrade-api-trader.git
+git clone https://github.com/MattVAllen/etrade-api-trader.git
 cd etrade-api-trader
 python -m venv venv
 venv\Scripts\activate
