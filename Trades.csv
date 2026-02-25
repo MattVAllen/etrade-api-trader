@@ -1,0 +1,2 @@
+Symbol,Action,Quantity,PriceType,LimitPrice,StopPrice,OrderTerm,MarketSession,AllOrNone,RoutingDestination
+AAPL,BUY,10,MARKET,,,GOOD_FOR_DAY,REGULAR,FALSE,AUTO
