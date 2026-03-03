@@ -14,6 +14,26 @@ from utils.csv_reader import read_trades, TradeInstruction
 from pyetrade import ETradeAccounts, ETradeOrder
 
 
+def normalize(obj):
+    """If pyetrade returns a list instead of a dict, unwrap it."""
+    if isinstance(obj, list):
+        return obj[0] if obj else {}
+    return obj
+
+
+def safe_get(obj, *keys):
+    """
+    Traverse nested keys safely, unwrapping any lists along the way.
+    e.g. safe_get(resp, "PreviewOrderResponse", "PreviewIds", "previewId")
+    """
+    for key in keys:
+        if obj is None:
+            return None
+        obj = normalize(obj)
+        obj = obj.get(key)
+    return normalize(obj) if isinstance(obj, (list, dict)) else obj
+
+
 def get_account(cfg, access_token, access_secret):
     """Get account list and let user pick one."""
     accounts = ETradeAccounts(
@@ -40,11 +60,9 @@ def get_account(cfg, access_token, access_secret):
 
     while True:
         raw = input("Select account (enter number 1-{}, or account ID): ".format(len(active))).strip()
-        # Check if they entered a list number
         if raw.isdigit() and 1 <= int(raw) <= len(active):
             acct = active[int(raw) - 1]
             break
-        # Check if they entered an account ID
         match = [a for a in active if a["accountId"] == raw]
         if match:
             acct = match[0]
@@ -62,18 +80,22 @@ def preview_and_place(orders_client, account_id_key, trade):
 
     # Preview
     try:
-        preview = orders_client.preview_equity_order(**params)
-        preview_id = preview["PreviewOrderResponse"]["PreviewIds"]["previewId"]
-        commission = preview["PreviewOrderResponse"]["Order"]["estimatedCommission"]
+        preview = normalize(orders_client.preview_equity_order(**params))
+        preview_id = safe_get(preview, "PreviewOrderResponse", "PreviewIds", "previewId")
+        commission = safe_get(preview, "PreviewOrderResponse", "Order", "estimatedCommission")
+        if preview_id is None:
+            raise ValueError(f"Could not extract previewId from response: {preview}")
     except Exception as e:
         print(f"  PREVIEW FAILED: {e}")
         return None
 
     # Place
     try:
-        result = orders_client.place_equity_order(**params, previewId=preview_id)
-        order_id = result["PlaceOrderResponse"]["OrderIds"]["orderId"]
-        msg = result["PlaceOrderResponse"]["Order"]["messages"]["Message"]["description"]
+        result = normalize(orders_client.place_equity_order(**params, previewId=preview_id))
+        order_id = safe_get(result, "PlaceOrderResponse", "OrderIds", "orderId")
+        msg = safe_get(result, "PlaceOrderResponse", "Order", "messages", "Message", "description")
+        if order_id is None:
+            raise ValueError(f"Could not extract orderId from response: {result}")
         print(f"  Order #{order_id} - {msg} (commission: ${commission})")
         return order_id
     except Exception as e:
@@ -106,6 +128,13 @@ def main():
     print(f"\nReading trades from: {csv_path}")
     trades = read_trades(csv_path)
 
+    # Show summary counts
+    sells = [t for t in trades if t.action in ("SELL", "SELL_SHORT")]
+    buys = [t for t in trades if t.action in ("BUY", "BUY_TO_COVER")]
+    print(f"\nLoaded {len(trades)} trades: {len(sells)} SELL(s), {len(buys)} BUY(s)")
+    if sells:
+        print("  SELLs will execute first")
+
     # Show trade summary
     print(f"\nTrade Summary:")
     print("-" * 60)
@@ -120,7 +149,7 @@ def main():
         print(f"{t.symbol:<10} {t.action:<12} {t.quantity:>6} {price_info:<14} {t.order_term}")
     print("-" * 60)
 
-    # Confirmation - extra safety for production
+    # Confirmation
     if is_prod:
         print(f"\n{'!' * 60}")
         print(f"  WARNING: You are about to place {len(trades)} REAL trades")
@@ -144,7 +173,7 @@ def main():
     # Get account
     account_id_key = get_account(cfg, access_token, access_secret)
 
-    # Second confirmation for production after seeing the account
+    # Second confirmation for production
     if is_prod:
         confirm2 = input(f"\n  Final check - execute trades on this account? (CONFIRM/no): ").strip()
         if confirm2 != "CONFIRM":
@@ -160,10 +189,7 @@ def main():
         dev=(cfg.env == "sandbox"),
     )
 
-    # Execute trades
-    sells = [t for t in trades if t.action in ("SELL", "SELL_SHORT")]
-    buys = [t for t in trades if t.action in ("BUY", "BUY_TO_COVER")]
-
+    # Execute trades — SELLs first, then BUYs
     results = {"success": 0, "failed": 0}
 
     if sells:
