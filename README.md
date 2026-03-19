@@ -92,7 +92,13 @@ python run_trades.py trades.csv --env prod
 
 ## CSV Format
 
-All trades are driven by a CSV file. Only three columns are required — the rest are optional and will fall back to the defaults shown below.
+All trades are driven by a CSV file. A `Trades.template.csv` is included in the repo — copy it and fill in your trades:
+
+```cmd
+copy Trades.template.csv my_trades.csv
+```
+
+Only three columns are required — the rest are optional and will fall back to the defaults shown below.
 
 ### Required columns
 

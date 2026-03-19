@@ -26,3 +26,13 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Local working folder (personal files, reference material, trade data)
+_local/
+
+# Claude Code context and session data (local paths — not for public repo)
+CLAUDE.md
+.claude/
+
+# Active trade file (use Trades.template.csv as starting point)
+Trades.csv
