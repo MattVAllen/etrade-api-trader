@@ -146,8 +146,8 @@ def authenticate(cfg: ETradeConfig, force_new: bool = False) -> Tuple[str, str]:
                 renew_access_token(cfg, access_token, access_secret)
                 print("Existing tokens renewed successfully")
                 return access_token, access_secret
-            except Exception:
-                print("Token renewal failed (likely expired). Re-authenticating...")
+            except Exception as e:
+                print(f"Token renewal failed ({e}). Re-authenticating...")
 
     print("\nStarting OAuth authentication flow...")
     print("=" * 50)
