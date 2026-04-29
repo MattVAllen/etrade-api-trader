@@ -1,0 +1,11 @@
+{
+  "folders": [
+    { "name": "EAT", "path": "." }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.DS_Store": true
+    },
+    "brunnr.autoOpenCC": true
+  }
+}
