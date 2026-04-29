@@ -47,12 +47,12 @@ OAuth tokens are cached locally in encrypted JSON files.
 
 **Sandbox tokens:**
 ```
-C:\Users\matel\.etrade\tokens.sandbox.json
+~/.etrade/tokens.sandbox.json
 ```
 
 **Production tokens:**
 ```
-C:\Users\matel\.etrade\tokens.prod.json
+~/.etrade/tokens.prod.json
 ```
 
 **Token file format:**
@@ -69,15 +69,6 @@ C:\Users\matel\.etrade\tokens.prod.json
 - Tokens expire at midnight US Eastern time
 - Auto-renewal happens automatically on next run
 - Manual refresh only needed if tokens are deleted
-
----
-
-## Directory Location
-
-**EAT** (local folder):
-```
-C:\Users\matel\OneDrive\Master_Files\Workshop\Brunnr\The Forge\EAT
-```
 
 ---
 

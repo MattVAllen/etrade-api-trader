@@ -187,6 +187,12 @@ This project uses [pyetrade](https://github.com/jessecooper/pyetrade) (v2.1.1) a
 
 ---
 
+## Issues & Roadmap
+
+Backlog and known issues live on GitHub: https://github.com/MattVAllen/etrade-api-trader/issues
+
+---
+
 ## Disclaimer
 
 This tool places real stock orders. Always test in sandbox before running in production. You are solely responsible for any trades executed. This is not financial advice.
